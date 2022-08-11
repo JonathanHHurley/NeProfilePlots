@@ -1,0 +1,60 @@
+# Makefile for building RayDARN
+
+# Declare default compilers
+LOCAL_FC = gfortran
+# Use default compilers unless specified by command line input
+FC = $(LOCAL_FC)
+
+# Declare optional and required compilation flags
+OPT_FLAGS = -O2 -fbacktrace -fno-automatic
+#OPT_FLAGS = -Og -Wall -fbounds-check -fbacktrace -fno-automatic
+REQ_FLAGS = -w -g
+
+C_FLAGS = -lm -ldl -lpthread -lcurl -std=c99
+
+# Declare non-local directories that contain source files
+IRIDIR = ./
+
+# Installation Dir
+INSTALL_DIR = ./#/usr/local/lib/python2.7/dist-packages/davitpy/models/raydarn
+#INSTALL_DIR = /usr/lib64/python2.7/site-packages/davitpy-0.2-py2.7-linux-x86_64.egg/models/raydarn
+#INSTALL_DIR =/usr/local/lib/python2.7/dist-packages/davitpy-0.2-py2.7-linux-x86_64.egg/models/raydarn/
+
+# Declare source, object, and executable files
+RTSRC = constants.f90 \
+
+
+IRISRC = $(IRIDIR)/irisub.for \
+         $(IRIDIR)/irifun.for \
+         $(IRIDIR)/iriflip.for \
+         $(IRIDIR)/iritec.for \
+         $(IRIDIR)/igrf.for \
+         $(IRIDIR)/cira.for \
+         $(IRIDIR)/iridreg.for
+
+RTOBJS = $(RTSRC:.f90=.o)
+IRIOBJS = $(IRISRC:.for=.o)
+
+EXEC = IRIpy
+
+%.o: %.for
+	$(FC) $(REQ_FLAGS) $(OPT_FLAGS) -c $< -o $@
+
+%.o: %.f90
+	$(FC) $(REQ_FLAGS) $(OPT_FLAGS) -c $< -o $@
+
+%.o: %.c
+	cc $(C_FLAGS) -c $< -o $@
+
+all: $(EXEC)
+
+IRIpy: $(IRIOBJS) $(RTOBJS) iripy.o
+
+$(EXEC):
+	$(FC) -o $@ $^
+
+.PHONY: all clean
+
+clean:
+	find . -name "*~" -o -name "*.o" -o -name "*.mod" | xargs rm -f $(EXEC)
+	rm -f $(EXEC) $(IRIOBJS)

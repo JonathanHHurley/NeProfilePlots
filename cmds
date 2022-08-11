@@ -1,0 +1,2 @@
+gcc echaimpy.c libECHAIM.so -o echaimpy -lm -ldl -lpthread -lcurl -std=c99
+make -f iripymakefile
